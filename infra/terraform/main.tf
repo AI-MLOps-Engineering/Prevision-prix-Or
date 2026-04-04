@@ -27,7 +27,7 @@ resource "scaleway_instance_ip" "public_ip" {
 resource "scaleway_instance_server" "server" {
   name  = var.instance_name
   type  = var.instance_type
-  image = "ubuntu_jammy"
+  image = "ubuntu_jammy_cloudinit"
 
   ip_id = scaleway_instance_ip.public_ip.id
 

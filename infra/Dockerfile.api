@@ -9,7 +9,9 @@ RUN apt-get update && apt-get install -y \
 
 # Install Python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt \
+&& pip install --no-cache-dir plotly pillow \
+&& pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch torchvision
 
 # Copy source code
 COPY api ./api

@@ -18,6 +18,9 @@ services:
     ports:
       - "8501:8501"
     restart: always
+    environment:
+      - STREAMLIT_WATCH=false
+      - STREAMLIT_SERVER_FILEWATCHER_TYPE=none
 
   nginx:
     image: nginx:alpine

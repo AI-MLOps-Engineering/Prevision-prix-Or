@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 
 
 class ChronosModel:
@@ -12,10 +12,7 @@ class ChronosModel:
 
     def load(self):
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
-        self.model = AutoModelForCausalLM.from_pretrained(
-            self.model_name,
-            torch_dtype=torch.float32
-        ).to(self.device)
+        self.model = AutoModelForSeq2SeqLM.from_pretrained(self.model_name, torch_dtype=torch.float32, trust_remote_code=True).to(self.device)  
 
     def predict(self, history, horizon):
         arr = np.array(history, dtype=np.float32)

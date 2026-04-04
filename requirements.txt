@@ -10,3 +10,6 @@ streamlit
 python-dotenv
 requests
 scikit-learn
+plotly
+torchvision
+pillow

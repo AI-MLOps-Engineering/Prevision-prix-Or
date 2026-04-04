@@ -1,33 +1,7 @@
-terraform {
-  required_providers {
-    scaleway = {
-      source  = "scaleway/scaleway"
-      version = ">= 2.31.0"
-    }
-  }
-}
-
-provider "scaleway" {
-  access_key = var.scw_access_key
-  secret_key = var.scw_secret_key
-  project_id = var.scw_project_id
-  zone       = "fr-par-1"
-  region     = "fr-par"
-}
-
-resource "scaleway_iam_ssh_key" "deploy_key" {
-  name       = "${var.instance_name}-ssh"
-  public_key = var.ssh_public_key
-}
-
-resource "scaleway_instance_ip" "public_ip" {
-  project_id = var.scw_project_id
-}
-
 resource "scaleway_instance_server" "server" {
   name  = var.instance_name
   type  = var.instance_type
-  image = "ubuntu_jammy_cloudinit"
+  image = "ubuntu_jammy"
 
   ip_id = scaleway_instance_ip.public_ip.id
 
@@ -35,8 +9,7 @@ resource "scaleway_instance_server" "server" {
     size_in_gb = 120
   }
 
-  user_data = {
-    "cloud-init" = <<-EOT
+  user_data = <<-EOT
 #cloud-config
 package_update: true
 package_upgrade: true
@@ -85,7 +58,4 @@ runcmd:
   - systemctl enable --now myapp-docker.service
 
 EOT
-  }
-
-  tags = ["gold", "mlops", "api", "streamlit"]
 }

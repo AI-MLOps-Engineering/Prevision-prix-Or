@@ -40,7 +40,7 @@ resource "scaleway_instance_server" "server" {
   }
 
   user_data = {
-    cloud-init = <<-EOT
+    "cloud-init" = <<-EOT
 #cloud-config
 package_update: true
 package_upgrade: true

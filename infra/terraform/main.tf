@@ -15,18 +15,15 @@ provider "scaleway" {
   region     = "fr-par"
 }
 
-# SSH key
 resource "scaleway_iam_ssh_key" "deploy_key" {
   name       = "${var.instance_name}-ssh"
   public_key = var.ssh_public_key
 }
 
-# Public IP
 resource "scaleway_instance_ip" "public_ip" {
   project_id = var.scw_project_id
 }
 
-# Server WITH cloud-init directly inside
 resource "scaleway_instance_server" "server" {
   name  = var.instance_name
   type  = var.instance_type
@@ -34,7 +31,6 @@ resource "scaleway_instance_server" "server" {
 
   ip_id = scaleway_instance_ip.public_ip.id
 
-  # ROOT VOLUME ONLY — 120 GB
   root_volume {
     size_in_gb = 120
   }
@@ -53,26 +49,21 @@ packages:
   - gnupg
 
 runcmd:
-  # Install Docker
   - curl -fsSL https://get.docker.com -o /tmp/get-docker.sh
   - sh /tmp/get-docker.sh
   - systemctl enable docker
   - systemctl start docker
 
-  # Install Docker Compose plugin
   - mkdir -p /usr/libexec/docker/cli-plugins
   - curl -SL "https://github.com/docker/compose/releases/download/v2.20.2/docker-compose-linux-x86_64" -o /usr/libexec/docker/cli-plugins/docker-compose
   - chmod +x /usr/libexec/docker/cli-plugins/docker-compose
 
-  # Clone repo
   - rm -rf /root/Prevision-prix-Or || true
   - git clone ${var.repo_url} /root/Prevision-prix-Or
 
-  # Build & run containers
   - cd /root/Prevision-prix-Or/infra
   - /usr/bin/docker compose up -d --build
 
-  # Systemd service
   - |
     cat > /etc/systemd/system/myapp-docker.service <<'EOF'
     [Unit]

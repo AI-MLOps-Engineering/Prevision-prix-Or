@@ -1,4 +1,104 @@
-infra/terraform/terraform.tfvars
-infra/terraform/terraform.tfstate*
-infra/terraform/terraform.lock.hcl*
+# Byte-compiled / Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
 
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+pip-wheel-metadata/
+.python-version
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Pytest / coverage
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# MyPy / type checkers
+.mypy_cache/
+.dmypy.json
+
+# IDEs and editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Logs and runtime files
+*.log
+logs/
+tmp/
+*.pid
+*.sock
+
+# Secrets and env files
+.env
+.env.* 
+secrets.*
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# SSH keys
+id_rsa
+id_rsa.pub
+*.pub
+
+# Docker / compose local overrides
+docker-compose.override.yml
+docker-compose.*.local.yml
+
+# Docker build artifacts (local)
+docker-compose*.local.*
+*.tar
+*.tgz
+
+# Docker volumes / caches (do not commit)
+hf_cache/
+.cache/
+.cache/huggingface/
+# If you mount a host cache volume, keep it out of git
+
+# Terraform
+.terraform/
+terraform.tfstate
+terraform.tfstate.backup
+crash.log
+override.tf
+override.tf.json
+*.tfvars
+*.tfvars.json
+
+# Node / frontend (if present)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Misc
+*.sqlite3
+*.db
+*.bak
+*.old

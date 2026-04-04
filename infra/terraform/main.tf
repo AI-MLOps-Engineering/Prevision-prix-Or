@@ -39,61 +39,62 @@ resource "scaleway_instance_server" "server" {
     size_in_gb = 120
   }
 
-  user_data = {
+user_data = {
   cloud-init = <<-EOT
-  #cloud-config
-  package_update: true
-  package_upgrade: true
+#cloud-config
+package_update: true
+package_upgrade: true
 
-  packages:
-    - git
-    - curl
-    - ca-certificates
-    - apt-transport-https
-    - gnupg
+packages:
+  - git
+  - curl
+  - ca-certificates
+  - apt-transport-https
+  - gnupg
 
-  runcmd:
-    # Install Docker
-    - curl -fsSL https://get.docker.com -o /tmp/get-docker.sh
-    - sh /tmp/get-docker.sh
-    - systemctl enable docker
-    - systemctl start docker
+runcmd:
+  # Install Docker
+  - curl -fsSL https://get.docker.com -o /tmp/get-docker.sh
+  - sh /tmp/get-docker.sh
+  - systemctl enable docker
+  - systemctl start docker
 
-    # Install Docker Compose plugin
-    - mkdir -p /usr/libexec/docker/cli-plugins
-    - curl -SL "https://github.com/docker/compose/releases/download/v2.20.2/docker-compose-linux-x86_64" -o /usr/libexec/docker/cli-plugins/docker-compose
-    - chmod +x /usr/libexec/docker/cli-plugins/docker-compose
+  # Install Docker Compose plugin
+  - mkdir -p /usr/libexec/docker/cli-plugins
+  - curl -SL "https://github.com/docker/compose/releases/download/v2.20.2/docker-compose-linux-x86_64" -o /usr/libexec/docker/cli-plugins/docker-compose
+  - chmod +x /usr/libexec/docker/cli-plugins/docker-compose
 
-    # Clone repo
-    - rm -rf /root/Prevision-prix-Or || true
-    - git clone ${var.repo_url} /root/Prevision-prix-Or
+  # Clone repo
+  - rm -rf /root/Prevision-prix-Or || true
+  - git clone ${var.repo_url} /root/Prevision-prix-Or
 
-    # Build & run containers
-    - cd /root/Prevision-prix-Or/infra
-    - /usr/bin/docker compose up -d --build
+  # Build & run containers
+  - cd /root/Prevision-prix-Or/infra
+  - /usr/bin/docker compose up -d --build
 
-    # Systemd service
-    - |
-      cat > /etc/systemd/system/myapp-docker.service <<'EOF'
-      [Unit]
-      Description=Start docker compose for gold forecasting
-      After=docker.service
-      Requires=docker.service
+  # Systemd service
+  - |
+    cat > /etc/systemd/system/myapp-docker.service <<'EOF'
+    [Unit]
+    Description=Start docker compose for gold forecasting
+    After=docker.service
+    Requires=docker.service
 
-      [Service]
-      Type=oneshot
-      WorkingDirectory=/root/Prevision-prix-Or/infra
-      ExecStart=/usr/bin/docker compose up -d
-      RemainAfterExit=yes
+    [Service]
+    Type=oneshot
+    WorkingDirectory=/root/Prevision-prix-Or/infra
+    ExecStart=/usr/bin/docker compose up -d
+    RemainAfterExit=yes
 
-      [Install]
-      WantedBy=multi-user.target
-      EOF
+    [Install]
+    WantedBy=multi-user.target
+    EOF
 
-    - systemctl daemon-reload
-    - systemctl enable --now myapp-docker.service
-  EOT
-  }
+  - systemctl daemon-reload
+  - systemctl enable --now myapp-docker.service
+
+EOT
+}
 
   tags = ["gold", "mlops", "api", "streamlit"]
 }

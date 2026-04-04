@@ -78,14 +78,8 @@ resource "scaleway_instance_user_data" "cloudinit" {
       - systemctl enable --now docker
       # Clone repo and start compose
       - rm -rf /root/Prevision-prix-Or || true
-      - |
-        # Clone complet (no shallow) and retry on transient network errors
-        for i in 1 2 3; do
-          git clone --branch main https://github.com/AI-MLOps-Engineering/Prevision-prix-Or.git /root/Prevision-prix-Or && break || sleep 5
-        done
-      - cd /root/Prevision-prix-Or || exit 1
-      - git submodule update --init --recursive || true
-      - cd /root/Prevision-prix-Or/infra || exit 1
+      - git clone ${var.repo_url} /root/Prevision-prix-Or
+      - cd /root/Prevision-prix-Or/infra
       - /usr/bin/docker compose up -d --build
       # Create systemd unit to ensure compose runs after reboot
       - cat > /etc/systemd/system/myapp-docker.service <<'EOF'

@@ -39,8 +39,8 @@ resource "scaleway_instance_server" "server" {
     size_in_gb = 120
   }
 
-user_data = {
-  cloud-init = <<-EOT
+  user_data = {
+    cloud-init = <<-EOT
 #cloud-config
 package_update: true
 package_upgrade: true
@@ -94,7 +94,7 @@ runcmd:
   - systemctl enable --now myapp-docker.service
 
 EOT
-}
+  }
 
   tags = ["gold", "mlops", "api", "streamlit"]
 }

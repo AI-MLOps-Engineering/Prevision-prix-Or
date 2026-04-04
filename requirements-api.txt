@@ -1,0 +1,15 @@
+fastapi==0.135.3
+uvicorn[standard]==0.43.0
+pydantic==2.12.5
+transformers==5.5.0
+huggingface-hub<2.0,>=1.5.0
+safetensors>=0.4.3
+tokenizers<=0.23.0,>=0.22.0
+torch==2.11.0
+torchvision==0.26.0
+triton==3.6.0
+cuda-toolkit==13.0.2
+python-dotenv==1.2.2
+pandas==3.0.2
+numpy==2.4.4
+requests==2.33.1

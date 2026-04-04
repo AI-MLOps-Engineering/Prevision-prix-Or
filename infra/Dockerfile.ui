@@ -2,10 +2,12 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt \
-&& pip install --no-cache-dir plotly pillow \
-&& pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch torchvision
+COPY requirements-ui.txt .
+RUN apt-get update && apt-get install -y --no-install-recommends gcc build-essential \
+ && pip install --no-cache-dir -r requirements-ui.txt \
+ && apt-get remove -y gcc build-essential \
+ && apt-get autoremove -y \
+ && rm -rf /var/lib/apt/lists/*
 
 COPY ui ./ui
 COPY ml ./ml

@@ -1,0 +1,10 @@
+streamlit==1.56.0
+plotly==6.6.0
+pillow==12.2.0
+pandas==3.0.2
+numpy==2.4.4
+yfinance==1.2.0
+requests==2.33.1
+python-dotenv==1.2.2
+scikit-learn==1.8.0
+torchvision==0.26.0 

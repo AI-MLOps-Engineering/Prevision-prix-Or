@@ -5,8 +5,6 @@ import plotly.graph_objects as go
 
 from ml.data_fetcher import fetch_gold_prices
 from ml.preprocessing import prepare_timeseries
-from ml.inference import predict_all
-from ml.metrics import compute_all_metrics
 
 
 # -------------------------------------------------------------------
@@ -44,6 +42,9 @@ horizon = st.sidebar.slider(
 )
 
 if st.sidebar.button("Lancer la prévision"):
+    from ml.inference import predict_all
+    from ml.metrics import compute_all_metrics
+
     st.subheader("🔮 Résultats des modèles")
 
     history = ts.values.tolist()
@@ -52,9 +53,9 @@ if st.sidebar.button("Lancer la prévision"):
     # PRÉDICTIONS MULTI-MODÈLES
     # -------------------------------------------------------------------
     results = predict_all(history, horizon)
-
-    preds_chronos = results["chronos"]
-    preds_tst = results["tst"]
+    by_name = {m["name"]: m["predictions"] for m in results["models"]}
+    preds_chronos = by_name["Chronos"]
+    preds_tst = by_name["TimeSeriesTransformer"]
 
     # -------------------------------------------------------------------
     # COURBES COMPARATIVES

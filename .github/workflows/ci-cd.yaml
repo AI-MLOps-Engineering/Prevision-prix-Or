@@ -101,8 +101,8 @@ jobs:
           cache-to: type=gha,mode=max
 
       # Activer le déploiement : variable de dépôt DEPLOY_ENABLED = true
-      # + secrets : DEPLOY_HOST, DEPLOY_USER, DEPLOY_SSH_KEY
-      # Optionnel : DEPLOY_PATH (chemin du clone sur le serveur)
+      # + secrets : DEPLOY_HOST, DEPLOY_USER, DEPLOY_SSH_KEY (clé PRIVÉE complète, voir README)
+      # Optionnel : DEPLOY_PATH
       - name: Deploy over SSH
         if: vars.DEPLOY_ENABLED == 'true'
         uses: appleboy/ssh-action@v1.2.2
@@ -110,7 +110,7 @@ jobs:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
-          script_stop: true
+          command_timeout: 20m
           script: |
             set -euxo pipefail
             DEPLOY_PATH='${{ secrets.DEPLOY_PATH }}'

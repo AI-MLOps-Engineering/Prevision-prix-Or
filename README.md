@@ -133,9 +133,9 @@ Workflow **`.github/workflows/ci-cd.yaml`** :
 
 ## 📈 Streamlit pages
 
-![Streamlit page 1](docs/Streamlit-screenshot1.png)
-![Streamlit page 2](docs/Streamlit-screenshot2.png)
-![Streamlit page 3](docs/Streamlit-screenshot3.png)
-![Streamlit page 4](docs/Streamlit-screenshot4.png)
+![Streamlit page 1](docs/Streamlit_screenshot1.png)
+![Streamlit page 2](docs/Streamlit_screenshot2.png)
+![Streamlit page 3](docs/Streamlit_screenshot3.png)
+![Streamlit page 4](docs/Streamlit_screenshot4.png)
 
 ---

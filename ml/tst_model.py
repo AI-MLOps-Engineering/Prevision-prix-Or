@@ -1,57 +1,62 @@
-import torch
 import numpy as np
+import torch
 from transformers import TimeSeriesTransformerConfig, TimeSeriesTransformerForPrediction
+
+
+def _age_features(length: int, device: torch.device) -> torch.Tensor:
+    """Indices temporels normalisés (forme attendue pour past/future time features)."""
+    t = torch.arange(length, dtype=torch.float32, device=device)
+    return (t - t.mean()) / (t.std() + 1e-6)
 
 
 class TimeSeriesTransformerModel:
     def __init__(self, context_length=64, prediction_length=7):
         self.context_length = context_length
         self.prediction_length = prediction_length
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         self.config = TimeSeriesTransformerConfig(
             prediction_length=prediction_length,
             context_length=context_length,
             num_time_features=1,
-            num_static_categorical_features=0,
-            num_static_real_features=0,
+            encoder_attention_heads=4,
+            decoder_attention_heads=4,
             d_model=64,
             encoder_layers=3,
             decoder_layers=3,
-            n_heads=4,
+            num_parallel_samples=8,
         )
 
         self.model = TimeSeriesTransformerForPrediction(self.config).to(self.device)
 
-    def _build_batch(self, series):
-        values = torch.tensor(series, dtype=torch.float32).unsqueeze(0)
-        past = values[:, :self.context_length]
-        future = values[:, self.context_length:self.context_length + self.prediction_length]
-
-        total_len = self.context_length + self.prediction_length
-        time_idx = torch.arange(total_len, dtype=torch.float32).unsqueeze(0)
-        time_idx = (time_idx - time_idx.mean()) / (time_idx.std() + 1e-6)
-
-        past_tf = time_idx[:, :self.context_length].unsqueeze(-1)
-        future_tf = time_idx[:, self.context_length:total_len].unsqueeze(-1)
-
-        return {
-            "past_values": past.to(self.device),
-            "past_time_features": past_tf.to(self.device),
-            "future_values": future.to(self.device),
-            "future_time_features": future_tf.to(self.device),
-        }
-
     def predict(self, history):
-        ctx = np.asarray(history[-self.context_length :], dtype=np.float32).reshape(-1)
-        future_placeholder = np.zeros(self.prediction_length, dtype=np.float32)
-        full = np.concatenate([ctx, future_placeholder])
+        hist = np.asarray(history, dtype=np.float32).reshape(-1)
+        past_len = self.model.model._past_length
 
-        batch = self._build_batch(full)
+        if len(hist) < past_len:
+            first = float(hist[0]) if len(hist) else 0.0
+            pad = np.full(past_len - len(hist), first, dtype=np.float32)
+            hist = np.concatenate([pad, hist])
+
+        past_values = torch.from_numpy(hist[-past_len:].copy()).unsqueeze(0).float().to(self.device)
+
+        t_past = _age_features(past_len, self.device)
+        past_time_features = t_past.view(1, past_len, 1)
+
+        pred_len = self.prediction_length
+        t_future = _age_features(past_len + pred_len, self.device)[past_len:]
+        future_time_features = t_future.view(1, pred_len, 1)
+
+        past_observed_mask = torch.ones((1, past_len), dtype=torch.bool, device=self.device)
 
         with torch.no_grad():
-            outputs = self.model(**batch)
-            distr = self.model.output_distribution(outputs)
-            preds = distr.mean[0].cpu().numpy().tolist()
+            out = self.model.generate(
+                past_values=past_values,
+                past_time_features=past_time_features,
+                future_time_features=future_time_features,
+                past_observed_mask=past_observed_mask,
+            )
 
-        return preds
+        samples = out.sequences[0]
+        point = samples.mean(dim=0).cpu().numpy()
+        return point.tolist()

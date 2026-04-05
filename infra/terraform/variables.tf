@@ -42,6 +42,14 @@ variable "ssh_user" {
 }
 
 variable "repo_url" {
-  type    = string
-  default = "https://github.com/AI-MLOps-Engineering/Prevision-prix-Or.git"
+  description = "URL HTTPS du dépôt Git à cloner. Laisser vide pour utiliser le dépôt public officiel (AI-MLOps-Engineering/Prevision-prix-Or)."
+  type        = string
+  default     = ""
+}
+
+variable "git_pat" {
+  description = "Optionnel : PAT GitHub si vous clonez un fork ou dépôt privé. Inutile pour le dépôt public https://github.com/AI-MLOps-Engineering/Prevision-prix-Or.git"
+  type        = string
+  default     = ""
+  sensitive   = true
 }

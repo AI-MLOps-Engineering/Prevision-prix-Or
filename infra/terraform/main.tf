@@ -1,3 +1,14 @@
+locals {
+  # Dépôt public : https://github.com/AI-MLOps-Engineering/Prevision-prix-Or
+  official_public_repo_url = "https://github.com/AI-MLOps-Engineering/Prevision-prix-Or.git"
+  effective_repo_url       = trimspace(var.repo_url) != "" ? trimspace(var.repo_url) : local.official_public_repo_url
+  git_clone_url = var.git_pat == "" ? local.effective_repo_url : replace(
+    local.effective_repo_url,
+    "https://github.com/",
+    "https://x-access-token:${var.git_pat}@github.com/"
+  )
+}
+
 resource "scaleway_instance_ip" "public_ip" {}
 
 resource "scaleway_instance_server" "server" {
@@ -14,52 +25,27 @@ resource "scaleway_instance_server" "server" {
   user_data = {
     "cloud-init" = <<-EOT
 #cloud-config
-package_update: true
-package_upgrade: true
+package_update: false
+package_upgrade: false
 
-packages:
-  - git
-  - curl
-  - ca-certificates
-  - apt-transport-https
-  - gnupg
+write_files:
+  - path: /root/.gold-repo-url
+    permissions: '0600'
+    content: |-
+      ${local.git_clone_url}
+
+  - path: /root/gold-bootstrap.sh
+    permissions: '0755'
+    encoding: b64
+    content: ${filebase64("${path.module}/gold-bootstrap.sh")}
 
 runcmd:
-  - curl -fsSL https://get.docker.com -o /tmp/get-docker.sh
-  - sh /tmp/get-docker.sh
-  - systemctl enable docker
-  - systemctl start docker
+  - [ /bin/bash, /root/gold-bootstrap.sh ]
 
-  - mkdir -p /usr/libexec/docker/cli-plugins
-  - curl -SL "https://github.com/docker/compose/releases/download/v2.20.2/docker-compose-linux-x86_64" -o /usr/libexec/docker/cli-plugins/docker-compose
-  - chmod +x /usr/libexec/docker/cli-plugins/docker-compose
-
-  - rm -rf /root/Prevision-prix-Or || true
-  - git clone ${var.repo_url} /root/Prevision-prix-Or
-
-  - cd /root/Prevision-prix-Or/infra
-  - /usr/bin/docker compose up -d --build
-
-  - |
-    cat > /etc/systemd/system/myapp-docker.service <<'EOF'
-    [Unit]
-    Description=Start docker compose for gold forecasting
-    After=docker.service
-    Requires=docker.service
-
-    [Service]
-    Type=oneshot
-    WorkingDirectory=/root/Prevision-prix-Or/infra
-    ExecStart=/usr/bin/docker compose up -d
-    RemainAfterExit=yes
-
-    [Install]
-    WantedBy=multi-user.target
-    EOF
-
-  - systemctl daemon-reload
-  - systemctl enable --now myapp-docker.service
-
+users:
+  - name: root
+    ssh_authorized_keys:
+      - ${jsonencode(trimspace(var.ssh_public_key))}
 EOT
   }
 }

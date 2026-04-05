@@ -7,7 +7,7 @@ def mae(y_true, y_pred):
 
 
 def rmse(y_true, y_pred):
-    return float(mean_squared_error(y_true, y_pred, squared=False))
+    return float(np.sqrt(mean_squared_error(y_true, y_pred)))
 
 
 def mape(y_true, y_pred):

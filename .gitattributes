@@ -1,0 +1,2 @@
+# Évite CRLF sur les scripts : sinon Linux voit "/bin/bash^M" (bad interpreter)
+*.sh text eol=lf

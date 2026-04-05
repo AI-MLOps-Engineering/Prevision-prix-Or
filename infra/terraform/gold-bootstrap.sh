@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euxo pipefail
 umask 077
-exec >> /var/log/gold-bootstrap.log 2>&1
+exec > >(tee -a /var/log/gold-bootstrap.log) 2>&1
 echo "gold-bootstrap start $(date -Is)"
 
 REPO=$(tr -d ' \n\r' < /root/.gold-repo-url)

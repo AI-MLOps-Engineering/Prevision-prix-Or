@@ -7,8 +7,6 @@ safetensors>=0.4.3
 tokenizers<=0.23.0,>=0.22.0
 torch==2.11.0
 torchvision==0.26.0
-triton==3.6.0
-cuda-toolkit==13.0.2
 python-dotenv==1.2.2
 pandas==3.0.2
 numpy==2.4.4

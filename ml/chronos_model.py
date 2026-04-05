@@ -12,9 +12,11 @@ class ChronosModel:
     def __init__(self, model_name="amazon/chronos-t5-base"):
         self.model_name = model_name
         self.pipeline = None
+        self.device = "cpu"
 
     def load(self):
         device_map = "cuda" if torch.cuda.is_available() else "cpu"
+        self.device = device_map
         self.pipeline = ChronosPipeline.from_pretrained(
             self.model_name,
             device_map=device_map,

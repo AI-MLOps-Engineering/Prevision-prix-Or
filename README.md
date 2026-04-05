@@ -1,3 +1,5 @@
+![CI / CD](https://github.com/AI-MLOps-Engineering/Prevision-prix-Or/actions/workflows/ci-cd.yaml/badge.svg)
+
 # 📊 Prévision du prix de l’or (Prevision-prix-Or)
 
 Application de **prévision de série temporelle** sur le cours de l’or (données Yahoo Finance), avec comparaison de deux approches : **Amazon Chronos** et un **Time Series Transformer** (Hugging Face). Une **API FastAPI** expose les prévisions ; une **UI Streamlit** les visualise. Le tout est conteneurisé (**Docker** + **Nginx**) et l’infra cloud est provisionnée avec **Terraform** sur **Scaleway**.

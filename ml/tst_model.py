@@ -43,7 +43,7 @@ class TimeSeriesTransformerModel:
         }
 
     def predict(self, history):
-        ctx = np.array(history[-self.context_length:], dtype=np.float32)
+        ctx = np.asarray(history[-self.context_length :], dtype=np.float32).reshape(-1)
         future_placeholder = np.zeros(self.prediction_length, dtype=np.float32)
         full = np.concatenate([ctx, future_placeholder])
 

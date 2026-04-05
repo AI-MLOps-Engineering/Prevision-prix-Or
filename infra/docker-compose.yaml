@@ -11,8 +11,8 @@ services:
     environment:
       - TRANSFORMERS_CACHE=/root/.cache/huggingface
     volumes:
-      - ./api:/app/api:ro
-      - ./ml:/app/ml:ro
+      - ../api:/app/api:ro
+      - ../ml:/app/ml:ro
       - hf_cache:/root/.cache/huggingface:rw
     restart: always
 
@@ -26,8 +26,8 @@ services:
     environment:
       - STREAMLIT_SERVER_FILEWATCHER_TYPE=none
     volumes:
-      - ./ui:/app/ui:ro
-      - ./ml:/app/ml:ro
+      - ../ui:/app/ui:ro
+      - ../ml:/app/ml:ro
       - hf_cache:/root/.cache/huggingface:rw
     restart: always
 

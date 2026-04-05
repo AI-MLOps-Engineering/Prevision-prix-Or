@@ -1,4 +1,3 @@
-import numpy as np
 from pathlib import Path
 
 from ml.data_fetcher import fetch_gold_prices

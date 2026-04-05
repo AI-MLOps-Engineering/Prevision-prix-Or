@@ -1,0 +1,14 @@
+# Copier vers terraform.tfvars (ignoré par Git) et renseigner les valeurs réelles.
+# Référence : variables.tf
+
+scw_access_key  = "VOTRE_ACCESS_KEY"
+scw_secret_key  = "VOTRE_SECRET_KEY"
+scw_project_id  = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+
+ssh_public_key = "ssh-ed25519 AAAA... commentaire@machine"
+
+# Optionnel
+# instance_type = "DEV1-L"
+# instance_name = "gold-forecasting"
+# repo_url = ""
+# git_pat = ""

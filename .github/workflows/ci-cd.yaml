@@ -5,17 +5,15 @@ on:
     branches: ["main"]
   pull_request:
     branches: ["main"]
+  workflow_dispatch:
 
 env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME_API: ${{ github.repository }}/api
-  IMAGE_NAME_UI: ${{ github.repository }}/ui
+  PYTHONPATH: ${{ github.workspace }}
 
 jobs:
-
-  # ---------------------------------------------------------
-  # 1) Continuous Integration (tests + lint + build)
-  # ---------------------------------------------------------
+  # ---------------------------------------------------------------------------
+  # CI : tests + lint + validation des Dockerfiles
+  # ---------------------------------------------------------------------------
   ci:
     runs-on: ubuntu-latest
 
@@ -27,44 +25,53 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-ci.txt
 
-      - name: Install dependencies
+      - name: Install dependencies (CI léger)
         run: |
           pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest
+          pip install -r requirements-ci.txt
 
       - name: Run tests
         run: pytest -q
 
       - name: Lint (flake8)
-        run: |
-          pip install flake8
-          flake8 .
+        run: flake8 api ml tests
 
-      - name: Build API Docker image
-        run: |
-          docker build -t api-image -f infra/Dockerfile.api .
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Build UI Docker image
-        run: |
-          docker build -t ui-image -f infra/Dockerfile.ui .
+      - name: Build API Docker image (validation)
+        run: docker build -t gold-api:ci -f infra/Dockerfile.api .
 
-  # ---------------------------------------------------------
-  # 2) Continuous Deployment (push images + deploy)
-  # ---------------------------------------------------------
+      - name: Build UI Docker image (validation)
+        run: docker build -t gold-ui:ci -f infra/Dockerfile.ui .
+
+  # ---------------------------------------------------------------------------
+  # CD : images GHCR + déploiement SSH optionnel (push sur main uniquement)
+  # ---------------------------------------------------------------------------
   cd:
     needs: ci
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     permissions:
       contents: read
       packages: write
+      actions: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Image names (lowercase for GHCR)
+        run: |
+          LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          echo "IMAGE_ROOT=ghcr.io/${LOWER}" >> "$GITHUB_ENV"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -73,42 +80,44 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build API image
-        run: |
-          docker build -t $REGISTRY/${{ env.IMAGE_NAME_API }}:latest -f infra/Dockerfile.api .
+      - name: Build & push API image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infra/Dockerfile.api
+          push: true
+          tags: ${{ env.IMAGE_ROOT }}/api:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      - name: Build UI image
-        run: |
-          docker build -t $REGISTRY/${{ env.IMAGE_NAME_UI }}:latest -f infra/Dockerfile.ui .
+      - name: Build & push UI image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infra/Dockerfile.ui
+          push: true
+          tags: ${{ env.IMAGE_ROOT }}/ui:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      - name: Push API image
-        run: |
-          docker push $REGISTRY/${{ env.IMAGE_NAME_API }}:latest
-
-      - name: Push UI image
-        run: |
-          docker push $REGISTRY/${{ env.IMAGE_NAME_UI }}:latest
-
-      # -----------------------------------------------------
-      # 3) Déploiement 
-      # -----------------------------------------------------
-      # Ici tu peux ajouter :
-      # - AWS ECS deploy
-      # - Azure Container Apps deploy
-      # - Scaleway deploy
-      # - SSH deploy sur ton VPS
-      #
-      # Exemple (Scaleway / VPS) :
-      #
-      # - name: Deploy to VPS
-      #   uses: appleboy/ssh-action@v1.0.3
-      #   with:
-      #     host: ${{ secrets.VPS_HOST }}
-      #     username: ${{ secrets.VPS_USER }}
-      #     key: ${{ secrets.VPS_SSH_KEY }}
-      #     script: |
-      #       docker pull ghcr.io/${{ env.IMAGE_NAME_API }}:latest
-      #       docker pull ghcr.io/${{ env.IMAGE_NAME_UI }}:latest
-      #       cd /home/ubuntu/your-app
-      #       docker-compose down
-      #       docker-compose up -d --build
+      # Activer le déploiement : variable de dépôt DEPLOY_ENABLED = true
+      # + secrets : DEPLOY_HOST, DEPLOY_USER, DEPLOY_SSH_KEY
+      # Optionnel : DEPLOY_PATH (chemin du clone sur le serveur)
+      - name: Deploy over SSH
+        if: vars.DEPLOY_ENABLED == 'true'
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script_stop: true
+          script: |
+            set -euxo pipefail
+            DEPLOY_PATH='${{ secrets.DEPLOY_PATH }}'
+            DEPLOY_PATH="${DEPLOY_PATH:-/root/Prevision-prix-Or}"
+            cd "$DEPLOY_PATH"
+            git fetch origin
+            git checkout main
+            git pull origin main
+            cd infra
+            docker compose up -d --build --force-recreate

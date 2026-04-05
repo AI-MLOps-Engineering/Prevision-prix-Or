@@ -1,16 +1,18 @@
 from fastapi import APIRouter, HTTPException
 from api.schemas import ForecastRequest, ForecastResponse, ModelPrediction
-from ml.inference import predict_all
 
 router = APIRouter()
 
 
 @router.post("/", response_model=ForecastResponse)
 def forecast(req: ForecastRequest):
+    # Import paresseux : évite de charger torch/chronos au démarrage (tests CI, healthcheck).
+    from ml.inference import predict_all
+
     try:
         result = predict_all(req.history, req.horizon)
 
-        models = [ 
+        models = [
             ModelPrediction(
                 name=m["name"],
                 predictions=m["predictions"],

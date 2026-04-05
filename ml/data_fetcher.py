@@ -1,6 +1,5 @@
 import yfinance as yf
 import pandas as pd
-from datetime import datetime
 
 
 def fetch_gold_prices(symbol: str = "GC=F", period: str = "5y") -> pd.DataFrame:

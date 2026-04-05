@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*.so
 
 # Virtual environments
 .venv/
@@ -16,6 +17,7 @@ build/
 dist/
 *.egg-info/
 .eggs/
+*.egg
 
 # Installer logs
 pip-log.txt
@@ -26,20 +28,27 @@ pip-delete-this-directory.txt
 .coverage
 coverage.xml
 htmlcov/
+coverage/
 
 # MyPy / type checkers
 .mypy_cache/
 .dmypy.json
+
+# Ruff (si utilisé plus tard)
+.ruff_cache/
 
 # IDEs and editors
 .vscode/
 .idea/
 *.sublime-project
 *.sublime-workspace
+*.swp
+*~
 
 # OS files
 .DS_Store
 Thumbs.db
+Desktop.ini
 
 # Jupyter
 .ipynb_checkpoints/
@@ -53,45 +62,62 @@ tmp/
 
 # Secrets and env files
 .env
-.env.* 
+.env.*
+!.env.example
 secrets.*
 *.pem
 *.key
+!*.key.example
 *.crt
 *.p12
 *.pfx
 
-# SSH keys
+# SSH keys (ne pas versionner les clés privées)
 id_rsa
-id_rsa.pub
-*.pub
+id_ed25519
+id_ecdsa
+*_rsa
+*_ed25519
+
+# Streamlit (secrets locaux)
+.streamlit/secrets.toml
 
 # Docker / compose local overrides
 docker-compose.override.yml
 docker-compose.*.local.yml
+docker-compose*.local.*
 
 # Docker build artifacts (local)
-docker-compose*.local.*
 *.tar
 *.tgz
 
-# Docker volumes / caches (do not commit)
+# Caches ML / Hugging Face (volumes locaux)
 hf_cache/
 .cache/
 .cache/huggingface/
-# If you mount a host cache volume, keep it out of git
 
-# Terraform
+# Artefacts d’entraînement / modèles locaux
+artifacts/
+models/
+checkpoints/
+
+# Terraform (commiter le fichier .terraform.lock.hcl pour figer les providers)
 .terraform/
-terraform.tfstate
-terraform.tfstate.backup
 crash.log
+crash.*.log
 override.tf
 override.tf.json
 *.tfvars
 *.tfvars.json
+terraform.tfstate
+terraform.tfstate.*
+*.tfstate
+*.tfstate.*
 
-# Node / frontend (if present)
+# Dump optionnel de schéma provider (inutile au run)
+infra/terraform/provider-schema.json
+
+# Node / frontend (si présent un jour)
 node_modules/
 npm-debug.log*
 yarn-debug.log*

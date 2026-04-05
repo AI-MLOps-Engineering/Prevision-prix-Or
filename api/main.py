@@ -23,4 +23,3 @@ app.include_router(forecast.router, prefix="/forecast", tags=["Forecast"])
 @app.get("/")
 def root():
     return {"message": "Gold Forecasting API is running"}
-    

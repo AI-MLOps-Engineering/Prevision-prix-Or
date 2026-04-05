@@ -62,41 +62,54 @@ if st.sidebar.button("Lancer la prévision"):
     # -------------------------------------------------------------------
     st.subheader("📈 Courbes de prévision")
 
+    # Sans fenêtre sur la fin de série, 5 ans d’historique écrasent visuellement
+    # l’horizon (ex. 7 jours) : les prévisions sont alors invisibles sur l’axe des dates.
+    tail_days = max(horizon * 6, 120)
+    hist_plot = ts.iloc[-tail_days:]
+
+    y_chronos = np.asarray(preds_chronos, dtype=float).ravel()
+    y_tst = np.asarray(preds_tst, dtype=float).ravel()
+    last = ts.index[-1]
+    future_index = pd.date_range(start=last, periods=horizon + 1, freq="D")[1:]
+
     fig = go.Figure()
 
-    # Historique
     fig.add_trace(go.Scatter(
-        x=ts.index,
-        y=ts.values,
+        x=hist_plot.index,
+        y=np.asarray(hist_plot.values, dtype=float).ravel(),
         mode="lines",
         name="Historique",
-        line=dict(color="white")
+        line=dict(color="#bbbbbb", width=1.5),
     ))
 
-    # Chronos
-    future_index = pd.date_range(start=ts.index[-1], periods=horizon+1, freq="D")[1:]
     fig.add_trace(go.Scatter(
         x=future_index,
-        y=preds_chronos,
+        y=y_chronos,
         mode="lines+markers",
         name="Chronos",
-        line=dict(color="gold")
+        line=dict(color="gold", width=2),
+        marker=dict(size=6),
     ))
 
-    # TST
     fig.add_trace(go.Scatter(
         x=future_index,
-        y=preds_tst,
+        y=y_tst,
         mode="lines+markers",
         name="TimeSeriesTransformer",
-        line=dict(color="cyan")
+        line=dict(color="cyan", width=2),
+        marker=dict(size=6),
     ))
+
+    x_min = min(hist_plot.index.min(), future_index.min())
+    x_max = max(hist_plot.index.max(), future_index.max())
 
     fig.update_layout(
         template="plotly_dark",
         height=500,
         xaxis_title="Date",
-        yaxis_title="Prix de l'or (USD)"
+        yaxis_title="Prix de l'or (USD)",
+        xaxis=dict(range=[x_min, x_max]),
+        hovermode="x unified",
     )
 
     st.plotly_chart(fig, width="stretch")

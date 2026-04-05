@@ -1,3 +1,5 @@
+resource "scaleway_instance_ip" "public_ip" {}
+
 resource "scaleway_instance_server" "server" {
   name  = var.instance_name
   type  = var.instance_type
@@ -9,7 +11,8 @@ resource "scaleway_instance_server" "server" {
     size_in_gb = 120
   }
 
-  user_data = <<-EOT
+  user_data = {
+    "cloud-init" = <<-EOT
 #cloud-config
 package_update: true
 package_upgrade: true
@@ -58,4 +61,5 @@ runcmd:
   - systemctl enable --now myapp-docker.service
 
 EOT
+  }
 }

@@ -3,7 +3,7 @@
 
 provider "registry.terraform.io/scaleway/scaleway" {
   version     = "2.71.0"
-  constraints = ">= 2.31.0"
+  constraints = "~> 2.0"
   hashes = [
     "h1:5jcIepTEeICoWK6pyvveMFrn4Cl8CXX2mckUU7zB8ko=",
     "zh:01283d6e581e076dee67860f389aa960ae22a185ce789706fc2acbba33602d9f",

@@ -99,7 +99,7 @@ if st.sidebar.button("Lancer la prévision"):
         yaxis_title="Prix de l'or (USD)"
     )
 
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     # -------------------------------------------------------------------
     # MÉTRIQUES

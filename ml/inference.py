@@ -16,7 +16,9 @@ def load_models(prediction_length=7):
         _chronos = ChronosModel()
         _chronos.load()
 
-    if _tst is None:
+    # Le TST est configuré avec une longueur de prédiction fixe ; si l’horizon change,
+    # il faut recréer le modèle (sinon métriques / graphes incohérents, ex. 25 vs 7).
+    if _tst is None or _tst.prediction_length != prediction_length:
         _tst = TimeSeriesTransformerModel(prediction_length=prediction_length)
 
     return _chronos, _tst
